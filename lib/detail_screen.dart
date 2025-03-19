@@ -9,13 +9,13 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(catData['breeds'][0]['name']),
+        title: Text(catData['id']),
       ),
       body: Column(
         children: [
           Image.network(catData['url']),
-          Text('Описание: ${catData['breeds'][0]['description']}'),
-          Text('Темперамент: ${catData['breeds'][0]['temperament']}'),
+          Text('Описание: Кот'),
+          Text('Темперамент: Спокойный'),
         ],
       ),
     );

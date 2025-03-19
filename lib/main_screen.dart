@@ -3,6 +3,7 @@ import 'detail_screen.dart';  // Импортируйте файл с DetailScre
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
+import 'package:logger/logger.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -12,27 +13,43 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   Map<String, dynamic>? _catData;
   int _likesCount = 0;
+  final Logger logger = Logger(); 
 
   Future<void> _fetchRandomCat() async {
-    final response = await http.get(Uri.parse('https://api.thecatapi.com/v1/images/search?has_breeds=true'));
-    if (response.statusCode == 200) {
-      setState(() {
-        _catData = json.decode(response.body)[0];
-      });
-    } else {
-      throw Exception('Failed to load cat');
+    try{
+      final response = await http.get(Uri.parse('https://api.thecatapi.com/v1/images/search?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T'));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data.isNotEmpty) {
+          setState(() {
+            _catData = data[0];
+          });
+          logger.i('Cat data fetched successfully: ${_catData}');  // Логирование успешного запроса
+        } else {
+          logger.e('Invalid data format from API');  // Логирование ошибки формата данных
+          throw Exception('Invalid data format');
+        }
+      } else {
+        logger.e('Failed to load cat: ${response.statusCode}');  // Логирование ошибки HTTP
+        throw Exception('Failed to load cat');
+      }
+    } catch (e) {
+      logger.e('Error fetching cat data: $e');  // Логирование исключения
+      throw Exception('Error: $e');
     }
   }
 
   void _handleLike() {
     setState(() {
       _likesCount++;
+      logger.d('Liked! Total likes: $_likesCount');
       _fetchRandomCat();
     });
   }
 
   void _handleDislike() {
     setState(() {
+      logger.d('Disliked!'); 
       _fetchRandomCat();
     });
   }
@@ -40,6 +57,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    logger.i('MainScreen initialized'); 
     _fetchRandomCat();
   }
 
@@ -56,7 +74,7 @@ class _MainScreenState extends State<MainScreen> {
           Text('$_likesCount'),
         ],
       ),
-      body: _catData == null
+      body: _catData == null || _catData == null || _catData!.isEmpty
           ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -70,13 +88,16 @@ class _MainScreenState extends State<MainScreen> {
                     );
                   },
                   child: CachedNetworkImage(
-                    imageUrl: _catData!['url'],
+                    imageUrl: '${_catData!['url']}?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T',
                     placeholder: (context, url) => CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => Icon(Icons.error),
+                    errorWidget: (context, url, error) {
+                      print('Error loading image: $error');
+                      return Icon(Icons.error);
+                    },
                   ),
                 ),
-                Text(_catData!['breeds'][0]['name']),
-                Row(
+                Text(_catData!['id']),
+                Row(  
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     LikeButton(onPressed: _handleDislike, icon: Icons.thumb_down),
