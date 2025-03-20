@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'detail_screen.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:logger/logger.dart';
@@ -14,6 +16,7 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   Map<String, dynamic>? _catData;
   int _likesCount = 0;
+  final CardSwiperController _swiperController = CardSwiperController();
   final Logger logger = Logger();
 
   Future<void> _fetchRandomCat() async {
@@ -44,7 +47,11 @@ class MainScreenState extends State<MainScreen> {
       throw Exception('Error: $e');
     }
   }
-
+  void _loadNewCat() async {
+    setState(() {
+      _fetchRandomCat();
+    });
+  }
   void _handleLike() {
     setState(() {
       _likesCount++;
@@ -81,55 +88,75 @@ class MainScreenState extends State<MainScreen> {
           _catData == null || _catData!.isEmpty
               ? Center(child: CircularProgressIndicator())
               : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => DetailScreen(catData: _catData!),
-                        ),
-                      );
-                    },
-                    child:
-                        _catData != null
-                            ? Image.network(
-                              '${_catData!['url']}?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T',
-                              loadingBuilder: (
-                                context,
-                                child,
-                                loadingProgress,
-                              ) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value:
-                                        loadingProgress.expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                    .cumulativeBytesLoaded /
-                                                (loadingProgress
-                                                        .expectedTotalBytes ??
-                                                    1)
-                                            : null,
+                  SizedBox(
+                    height: 400,
+                    child: CardSwiper(
+                      controller: _swiperController,
+                      cardsCount: _catData != null ? 1 : 0,
+                      numberOfCardsDisplayed: 1,
+                      onSwipe: (index, previousIndex, direction) {
+                        _loadNewCat();
+                        if (direction == CardSwiperDirection.right) {
+                          setState(() {
+                            _likesCount++;
+                          });
+                        }
+                        return true;
+                      },
+                      cardBuilder:
+                          (context, index, horizontalIndex, verticalIndex) {
+                        if (_catData == null) return const SizedBox();
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => DetailScreen(catData: _catData!),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            color: Color.fromARGB(255, 238, 201, 187),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 4,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: CachedNetworkImage(
+                                      imageUrl: _catData!["url"],
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                    ),
                                   ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                logger.e('Error loading image: $error');
-                                return Icon(Icons.error);
-                              },
-                            )
-                            : CircularProgressIndicator(),
-                  ),
-                  Text(
-                    _catData!["breeds"].isEmpty ||
-                            !_catData!["breeds"][0].containsKey("name")
-                        ? "Unknown"
-                        : _catData!["breeds"][0]["name"],
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      _catData!["breeds"][0]["name"],
+                                      style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
