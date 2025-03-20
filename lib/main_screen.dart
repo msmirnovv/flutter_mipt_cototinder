@@ -47,11 +47,13 @@ class MainScreenState extends State<MainScreen> {
       throw Exception('Error: $e');
     }
   }
+
   void _loadNewCat() async {
     setState(() {
       _fetchRandomCat();
     });
   }
+
   void _handleLike() {
     setState(() {
       _likesCount++;
@@ -105,8 +107,12 @@ class MainScreenState extends State<MainScreen> {
                         }
                         return true;
                       },
-                      cardBuilder:
-                          (context, index, horizontalIndex, verticalIndex) {
+                      cardBuilder: (
+                        context,
+                        index,
+                        horizontalIndex,
+                        verticalIndex,
+                      ) {
                         if (_catData == null) return const SizedBox();
                         return GestureDetector(
                           onTap: () {
@@ -114,7 +120,8 @@ class MainScreenState extends State<MainScreen> {
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (context) => DetailScreen(catData: _catData!),
+                                    (context) =>
+                                        DetailScreen(catData: _catData!),
                               ),
                             );
                           },
@@ -133,12 +140,13 @@ class MainScreenState extends State<MainScreen> {
                                       imageUrl: _catData!["url"],
                                       fit: BoxFit.cover,
                                       width: double.infinity,
-                                      placeholder: (context, url) =>
-                                          const Center(
-                                              child:
-                                                  CircularProgressIndicator()),
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
+                                      placeholder:
+                                          (context, url) => const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) =>
+                                              const Icon(Icons.error),
                                     ),
                                   ),
                                   Padding(
@@ -146,8 +154,9 @@ class MainScreenState extends State<MainScreen> {
                                     child: Text(
                                       _catData!["breeds"][0]["name"],
                                       style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],

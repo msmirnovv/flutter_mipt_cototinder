@@ -13,4 +13,4 @@
 ![Экран деталей](screenshots/detail.png)
 
 ## Скачать APK
-[Скачать APK](https://example.com/kototinder.apk)
+[Скачать APK](https://github.com/msmirnovv/flutter_mipt_cototinder/blob/main/app-release.apk)
