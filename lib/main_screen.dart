@@ -1,40 +1,46 @@
 import 'package:flutter/material.dart';
-import 'detail_screen.dart';  // Импортируйте файл с DetailScreen
+import 'detail_screen.dart';
 import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'package:logger/logger.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  MainScreenState createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   Map<String, dynamic>? _catData;
   int _likesCount = 0;
-  final Logger logger = Logger(); 
+  final Logger logger = Logger();
 
   Future<void> _fetchRandomCat() async {
-    try{
-      final response = await http.get(Uri.parse('https://api.thecatapi.com/v1/images/search?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T'));
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://api.thecatapi.com/v1/images/search?has_breeds=true&api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T',
+        ),
+      );
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         if (data.isNotEmpty) {
           setState(() {
             _catData = data[0];
           });
-          logger.i('Cat data fetched successfully: ${_catData}');  // Логирование успешного запроса
+          logger.i('Cat url: ${_catData!['url']}');
+          logger.i('Cat data fetched successfully: $_catData');
         } else {
-          logger.e('Invalid data format from API');  // Логирование ошибки формата данных
+          logger.e('Invalid data format from API');
           throw Exception('Invalid data format');
         }
       } else {
-        logger.e('Failed to load cat: ${response.statusCode}');  // Логирование ошибки HTTP
+        logger.e('Failed to load cat: ${response.statusCode}');
         throw Exception('Failed to load cat');
       }
     } catch (e) {
-      logger.e('Error fetching cat data: $e');  // Логирование исключения
+      logger.e('Error fetching cat data: $e');
       throw Exception('Error: $e');
     }
   }
@@ -49,7 +55,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void _handleDislike() {
     setState(() {
-      logger.d('Disliked!'); 
+      logger.d('Disliked!');
       _fetchRandomCat();
     });
   }
@@ -57,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    logger.i('MainScreen initialized'); 
+    logger.i('MainScreen initialized');
     _fetchRandomCat();
   }
 
@@ -67,45 +73,76 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: Text('Кототиндер'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.favorite),
-            onPressed: () {},
-          ),
+          IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
           Text('$_likesCount'),
         ],
       ),
-      body: _catData == null || _catData == null || _catData!.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailScreen(catData: _catData!),
-                      ),
-                    );
-                  },
-                  child: CachedNetworkImage(
-                    imageUrl: '${_catData!['url']}?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T',
-                    placeholder: (context, url) => CircularProgressIndicator(),
-                    errorWidget: (context, url, error) {
-                      print('Error loading image: $error');
-                      return Icon(Icons.error);
+      body:
+          _catData == null || _catData!.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => DetailScreen(catData: _catData!),
+                        ),
+                      );
                     },
+                    child:
+                        _catData != null
+                            ? Image.network(
+                              '${_catData!['url']}?api_key=live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T',
+                              loadingBuilder: (
+                                context,
+                                child,
+                                loadingProgress,
+                              ) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value:
+                                        loadingProgress.expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                (loadingProgress
+                                                        .expectedTotalBytes ??
+                                                    1)
+                                            : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                logger.e('Error loading image: $error');
+                                return Icon(Icons.error);
+                              },
+                            )
+                            : CircularProgressIndicator(),
                   ),
-                ),
-                Text(_catData!['id']),
-                Row(  
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    LikeButton(onPressed: _handleDislike, icon: Icons.thumb_down),
-                    LikeButton(onPressed: _handleLike, icon: Icons.thumb_up),
-                  ],
-                ),
-              ],
-            ),
+                  Text(
+                    _catData!["breeds"].isEmpty ||
+                            !_catData!["breeds"][0].containsKey("name")
+                        ? "Unknown"
+                        : _catData!["breeds"][0]["name"],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      LikeButton(
+                        onPressed: _handleDislike,
+                        icon: Icons.thumb_down,
+                      ),
+                      LikeButton(onPressed: _handleLike, icon: Icons.thumb_up),
+                    ],
+                  ),
+                ],
+              ),
     );
   }
 }
@@ -114,13 +151,10 @@ class LikeButton extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData icon;
 
-  LikeButton({required this.onPressed, required this.icon});
+  const LikeButton({super.key, required this.onPressed, required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon),
-      onPressed: onPressed,
-    );
+    return IconButton(icon: Icon(icon), onPressed: onPressed);
   }
 }

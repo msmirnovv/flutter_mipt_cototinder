@@ -1,16 +1,16 @@
-# kototinder
+# Кототиндер
 
-A new Flutter project.
+Приложение для знакомства с котиками.
 
-## Getting Started
+## Реализованные фичи
+- Отображение случайного котика.
+- Лайк/дизлайк.
+- Детальное описание породы.
+- Счетчик лайков.
 
-This project is a starting point for a Flutter application.
+## Скриншоты
+![Главный экран](screenshots/main.png)
+![Экран деталей](screenshots/detail.png)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Скачать APK
+[Скачать APK](https://example.com/kototinder.apk)
