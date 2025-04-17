@@ -61,10 +61,23 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed:
-                          () => context.read<LikedCatsCubit>().removeCat(
-                            likedCat,
-                          ),
+                      onPressed: () {
+                        final cubit = context.read<LikedCatsCubit>();
+                        cubit.removeCat(likedCat);
+
+                        final remainingCats = cubit.state;
+                        final stillHasSelectedBreed =
+                            selectedBreed == null ||
+                            remainingCats.any(
+                              (c) => c.cat.breed == selectedBreed,
+                            );
+
+                        if (!stillHasSelectedBreed) {
+                          setState(() {
+                            selectedBreed = null;
+                          });
+                        }
+                      },
                     ),
                   ),
                 );

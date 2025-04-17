@@ -18,13 +18,30 @@ class MainScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Кототиндер'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite),
-            onPressed:
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LikedCatsScreen()),
-                ),
+          BlocBuilder<LikedCatsCubit, List<LikedCat>>(
+            builder: (context, likedCats) {
+              return Row(
+                children: [
+                  Text(
+                    '${likedCats.length}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.favorite),
+                    onPressed:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LikedCatsScreen(),
+                          ),
+                        ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
