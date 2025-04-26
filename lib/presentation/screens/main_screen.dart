@@ -61,12 +61,13 @@ class MainScreen extends StatelessWidget {
                 final color =
                     connectivityState.online ? Colors.green : Colors.red;
 
-                // If the network is online, show a Snackbar indicating the internet was restored
                 if (connectivityState.online) {
                   Future.delayed(Duration.zero, () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(text), backgroundColor: color),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(text), backgroundColor: color),
+                      );
+                    }
                   });
                 }
 

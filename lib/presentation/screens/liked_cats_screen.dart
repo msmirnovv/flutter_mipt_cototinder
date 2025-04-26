@@ -18,7 +18,6 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
     final likedCats = context.watch<LikedCatsCubit>().state;
     final breeds = getBreeds(likedCats);
 
-    // <<< --- ДО ОТРИСОВКИ проверяем актуальность выбранной породы
     if (selectedBreed != null && !breeds.contains(selectedBreed)) {
       selectedBreed = null;
     }
@@ -79,9 +78,7 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
                         final cubit = context.read<LikedCatsCubit>();
                         cubit.removeCat(likedCat);
 
-                        setState(() {
-                          // ничего внутри onPressed по breeds проверять больше не нужно
-                        });
+                        setState(() {});
                       },
                     ),
                   ),
