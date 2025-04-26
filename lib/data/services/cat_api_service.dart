@@ -1,10 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../../domain/models/cat_model.dart';
 
 class CatApiService {
-  final String _apiKey =
-      'live_KonzsrutZWsnhgBGS2aPuDuahDQ3pwHfSxQRQgkOC3oSIHSwmws8S2QzVKUPpZ1T';
+  final String _apiKey = dotenv.env['API_KEY'] ?? '';
 
   Future<CatModel> fetchRandomCat() async {
     final response = await http.get(

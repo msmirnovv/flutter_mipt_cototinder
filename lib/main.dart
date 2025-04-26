@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'di/locator.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/cubits/cat_cubit.dart';
@@ -7,6 +8,7 @@ import 'presentation/cubits/liked_cats_cubit.dart';
 import 'presentation/cubits/connectivity_cubit.dart';
 
 void main() {
+  dotenv.load();
   setupLocator();
   runApp(const MyApp());
 }
