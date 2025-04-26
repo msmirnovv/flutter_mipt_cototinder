@@ -7,6 +7,7 @@ import '../cubits/liked_cats_cubit.dart';
 import 'detailed_screen.dart';
 import '../widgets/like_button.dart';
 import 'liked_cats_screen.dart';
+import '../cubits/connectivity_cubit.dart';
 
 class MainScreen extends StatelessWidget {
   MainScreen({super.key});
@@ -51,17 +52,143 @@ class MainScreen extends StatelessWidget {
           if (state is CatLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is CatError) {
-            return Center(
-              child: AlertDialog(
-                title: const Text('Ошибка'),
-                content: Text(state.message),
-                actions: [
-                  TextButton(
-                    onPressed: () => context.read<CatCubit>().fetchRandomCat(),
-                    child: const Text('Повторить'),
-                  ),
-                ],
-              ),
+            return BlocBuilder<ConnectivityCubit, ConnectivityState>(
+              builder: (context, connectivityState) {
+                final text =
+                    connectivityState.online
+                        ? 'Сеть восстановлена'
+                        : 'Вы оффлайн';
+                final color =
+                    connectivityState.online ? Colors.green : Colors.red;
+
+                // If the network is online, show a Snackbar indicating the internet was restored
+                if (connectivityState.online) {
+                  Future.delayed(Duration.zero, () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(text), backgroundColor: color),
+                    );
+                  });
+                }
+
+                if (!connectivityState.online) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      BlocBuilder<CatCubit, CatState>(
+                        builder: (context, state) {
+                          if (state is CatError) {
+                            return const Center(
+                              child: Text('Ошибка загрузки котов.'),
+                            );
+                          } else if (state is CatLoaded) {
+                            final cachedCat = state.cat;
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 400,
+                                  child: CardSwiper(
+                                    controller: _swiperController,
+                                    cardsCount: 1,
+                                    numberOfCardsDisplayed: 1,
+                                    onSwipe: (index, previousIndex, direction) {
+                                      context.read<LikedCatsCubit>().likeCat(
+                                        cachedCat,
+                                      );
+                                      context.read<CatCubit>().fetchRandomCat();
+                                      return true;
+                                    },
+                                    cardBuilder: (context, index, h, v) {
+                                      return GestureDetector(
+                                        onTap:
+                                            () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) => DetailedScreen(
+                                                      cat: cachedCat,
+                                                    ),
+                                              ),
+                                            ),
+                                        child: Card(
+                                          color: const Color.fromARGB(
+                                            255,
+                                            238,
+                                            201,
+                                            187,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          elevation: 4,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                Expanded(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: cachedCat.url,
+                                                    fit: BoxFit.cover,
+                                                    width: double.infinity,
+                                                    placeholder:
+                                                        (_, __) => const Center(
+                                                          child:
+                                                              CircularProgressIndicator(),
+                                                        ),
+                                                    errorWidget:
+                                                        (_, __, ___) =>
+                                                            const Icon(
+                                                              Icons.error,
+                                                            ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(
+                                                    cachedCat.breed,
+                                                    style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Text(text, style: TextStyle(color: color)),
+                    ElevatedButton(
+                      onPressed:
+                          () => context.read<CatCubit>().fetchRandomCat(),
+                      child: const Text('Загрузить котов'),
+                    ),
+                  ],
+                );
+              },
             );
           } else if (state is CatLoaded) {
             final cat = state.cat;

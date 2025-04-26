@@ -41,4 +41,19 @@ class CatRepositoryImpl implements CatRepository {
       );
     }
   }
+
+  @override
+  Future<CatModel> fetchOfflineCat() async {
+    final cached = await db.allCachedCats;
+    if (cached.isEmpty) throw Exception('Нет сохранённых котиков');
+    cached.shuffle();
+    final row = cached.first;
+    return CatModel(
+      url: row.url,
+      breed: row.breed,
+      description: row.description,
+      temperament: row.temperament,
+      origin: row.origin,
+    );
+  }
 }

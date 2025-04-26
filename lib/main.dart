@@ -34,6 +34,11 @@ class MyApp extends StatelessWidget {
               ..showSnackBar(
                 SnackBar(content: Text(text), backgroundColor: color),
               );
+            if (state.online) {
+              context.read<CatCubit>().fetchRandomCat();
+            } else {
+              context.read<CatCubit>().fetchOfflineCat();
+            }
           },
           child: MainScreen(),
         ),

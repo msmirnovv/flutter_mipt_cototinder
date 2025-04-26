@@ -28,13 +28,17 @@ class CatCubit extends Cubit<CatState> {
     try {
       final cat = await repository.fetchRandomCat();
       emit(CatLoaded(cat));
-    } on Exception catch (e) {
-      // Показываем только предупреждение, если нет сети
-      if (e.toString() == 'Нет сохранённых котиков') {
-        emit(CatError('Нет котов в базе'));
-      } else {
-        emit(CatError('Ошибка сети: ${e.toString()}'));
-      }
+    } catch (e) {
+      emit(CatError(e.toString()));
+    }
+  }
+
+  Future<void> fetchOfflineCat() async {
+    try {
+      final cat = await repository.fetchOfflineCat();
+      emit(CatLoaded(cat));
+    } catch (e) {
+      emit(CatError('Ошибка загрузки кота из базы данных'));
     }
   }
 }
