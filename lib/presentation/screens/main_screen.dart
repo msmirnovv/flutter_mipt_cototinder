@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../cubits/cat_cubit.dart';
 import '../cubits/liked_cats_cubit.dart';
-import 'detail_screen.dart';
+import 'detailed_screen.dart';
 import '../widgets/like_button.dart';
 import 'liked_cats_screen.dart';
 
@@ -80,21 +81,15 @@ class MainScreen extends StatelessWidget {
                       context.read<CatCubit>().fetchRandomCat();
                       return true;
                     },
-                    cardBuilder: (
-                      context,
-                      index,
-                      horizontalIndex,
-                      verticalIndex,
-                    ) {
+                    cardBuilder: (context, index, h, v) {
                       return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DetailScreen(cat: cat),
+                        onTap:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetailedScreen(cat: cat),
+                              ),
                             ),
-                          );
-                        },
                         child: Card(
                           color: const Color.fromARGB(255, 238, 201, 187),
                           shape: RoundedRectangleBorder(
@@ -106,23 +101,16 @@ class MainScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 Expanded(
-                                  child: Image.network(
-                                    cat.url,
+                                  child: CachedNetworkImage(
+                                    imageUrl: cat.url,
                                     fit: BoxFit.cover,
                                     width: double.infinity,
-                                    loadingBuilder: (
-                                      context,
-                                      child,
-                                      loadingProgress,
-                                    ) {
-                                      if (loadingProgress == null) return child;
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    },
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(Icons.error),
+                                    placeholder:
+                                        (_, __) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (_, __, ___) => const Icon(Icons.error),
                                   ),
                                 ),
                                 Padding(

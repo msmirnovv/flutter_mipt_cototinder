@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../cubits/liked_cats_cubit.dart';
 
 class LikedCatsScreen extends StatefulWidget {
@@ -15,7 +16,13 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
   @override
   Widget build(BuildContext context) {
     final likedCats = context.watch<LikedCatsCubit>().state;
-    final breeds = likedCats.map((e) => e.cat.breed).toSet().toList();
+    final breeds = getBreeds(likedCats);
+
+    // <<< --- ДО ОТРИСОВКИ проверяем актуальность выбранной породы
+    if (selectedBreed != null && !breeds.contains(selectedBreed)) {
+      selectedBreed = null;
+    }
+
     final filtered =
         selectedBreed == null
             ? likedCats
@@ -49,11 +56,18 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
                     vertical: 4,
                   ),
                   child: ListTile(
-                    leading: Image.network(
-                      likedCat.cat.url,
+                    leading: CachedNetworkImage(
+                      imageUrl: likedCat.cat.url,
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
+                      placeholder:
+                          (_, __) => SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                      errorWidget: (_, __, ___) => const Icon(Icons.error),
                     ),
                     title: Text(likedCat.cat.breed),
                     subtitle: Text(
@@ -65,18 +79,9 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
                         final cubit = context.read<LikedCatsCubit>();
                         cubit.removeCat(likedCat);
 
-                        final remainingCats = cubit.state;
-                        final stillHasSelectedBreed =
-                            selectedBreed == null ||
-                            remainingCats.any(
-                              (c) => c.cat.breed == selectedBreed,
-                            );
-
-                        if (!stillHasSelectedBreed) {
-                          setState(() {
-                            selectedBreed = null;
-                          });
-                        }
+                        setState(() {
+                          // ничего внутри onPressed по breeds проверять больше не нужно
+                        });
                       },
                     ),
                   ),
@@ -87,5 +92,9 @@ class _LikedCatsScreenState extends State<LikedCatsScreen> {
         ],
       ),
     );
+  }
+
+  List<String> getBreeds(List<LikedCat> likedCats) {
+    return likedCats.map((e) => e.cat.breed).toSet().toList();
   }
 }

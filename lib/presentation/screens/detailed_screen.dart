@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/models/cat_model.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailedScreen extends StatelessWidget {
   final CatModel cat;
 
-  const DetailScreen({super.key, required this.cat});
+  const DetailedScreen({super.key, required this.cat});
 
   @override
   Widget build(BuildContext context) {
@@ -13,17 +14,14 @@ class DetailScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.network(
-              cat.url,
+            CachedNetworkImage(
+              imageUrl: cat.url,
               width: double.infinity,
               height: 300,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator());
-              },
-              errorBuilder:
-                  (context, error, stackTrace) => const Icon(Icons.error),
+              placeholder:
+                  (_, __) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (_, __, ___) => const Icon(Icons.error),
             ),
             const SizedBox(height: 16),
             Padding(
